@@ -26,9 +26,16 @@ const App = () => {
     }
   }
 
-  const handleNext = () => (
-    setSelected(Math.floor(Math.random() * anecdotes.length))
-  )
+  const handleNext = () => {
+    // make sure that the next anecdote is not the same as the current one
+    let nextIndex = selected
+    if (anecdotes.length > 1) {
+      while (nextIndex === selected) {
+        nextIndex = Math.floor(Math.random() * anecdotes.length)
+      }
+    }
+    setSelected(nextIndex)
+  }
 
   const handleVote = () => {
     const newVotes = [...votes]
