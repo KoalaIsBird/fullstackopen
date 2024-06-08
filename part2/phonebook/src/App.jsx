@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import personService from './services/persons'
+
 
 
 const PersonForm = ({ handleSubmit, newName, newNumber, handleNameChange, handleNumberChange }) => (
@@ -17,9 +18,14 @@ const PersonForm = ({ handleSubmit, newName, newNumber, handleNameChange, handle
 )
 
 
-const Persons = ({ includedPersons }) => (
+const Persons = ({ includedPersons, deletePersonFun }) => (
   <div>
-    {includedPersons.map(person => <p key={person.name}>{person.name} {person.number}</p>)}
+    {includedPersons.map(person =>
+      <div key={person.id}>
+        <p>{person.name} {person.number}</p>
+        <button onClick={() => deletePersonFun(person)}>delete</button>
+      </div>
+    )}
   </div>
 )
 
@@ -36,8 +42,8 @@ const App = () => {
   const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/persons')
+    personService
+      .getAll()
       .then((response) => {
         setPersons(response.data)
       })
@@ -51,21 +57,59 @@ const App = () => {
     : persons
 
 
+  const deletePerson = person => {
+    if (window.confirm(`Delete ${person.name} ?`)) {
+      personService
+        .deletePerson(person)
+        .then(() => {
+          setPersons(persons.filter(p => (p.id !== person.id)))
+        })
+    }
+  }
+
+
   const handleSubmit = (event) => {
     event.preventDefault()
     if (!newName || !newNumber) {
       alert(`Please fill in both name and number fields`)
       return
     }
-    if (persons.some(person => person.name === newName)) {
-      alert(`${newName} is already added to phonebook`)
+
+    const presentPerson = persons.find(person => person.name === newName)
+
+    if (!presentPerson) {
+      const newPerson = { name: newName, number: newNumber }
+      personService
+        .addPerson(newPerson)
+        .then(response => {
+          const newPerson = response.data
+          const newPersons = persons.concat(newPerson)
+          setPersons(newPersons)
+          setNewName('')
+          setNewNumber('')
+        })
       return
     }
-    let newPerson = { name: newName, number: newNumber }
-    let newPersons = persons.concat(newPerson)
-    setPersons(newPersons)
-    setNewName('')
-    setNewNumber('')
+
+    if (presentPerson.number === newNumber) {
+      alert(`This person is already in the notebook with this phone number`)
+      return
+    }
+
+    if (presentPerson) {
+      if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
+        const newPerson = { ...presentPerson, number: newNumber }
+        personService
+          .changePerson(presentPerson, newPerson)
+          .then(p => {
+            setPersons(persons.map(p => presentPerson.id === p.id ? newPerson : p))
+            setNewName('')
+            setNewNumber('')
+          })
+      }
+      return
+    }
+
   }
 
   const handleNameChange = (event) => {
@@ -89,7 +133,7 @@ const App = () => {
       <PersonForm handleSubmit={handleSubmit} newName={newName} newNumber={newNumber}
         handleNameChange={handleNameChange} handleNumberChange={handleNumberChange} />
       <h2>Numbers</h2>
-      <Persons includedPersons={includedPersons} />
+      <Persons includedPersons={includedPersons} deletePersonFun={deletePerson} />
     </div>
   )
 }
