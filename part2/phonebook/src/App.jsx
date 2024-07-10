@@ -2,6 +2,26 @@ import { useState, useEffect } from 'react'
 import personService from './services/persons'
 
 
+const Notification = ({ data }) => {
+  if (!data) {
+    return null
+  }
+
+  const notificationStyle = {
+    color: data.color,
+    backgroundColor: 'lightGrey',
+    border: 'solid',
+    padding: 10,
+    marginBottom: 10
+  }
+
+  return (
+    <div style={notificationStyle}>
+      {data.message}
+    </div>
+  )
+}
+
 
 const PersonForm = ({ handleSubmit, newName, newNumber, handleNameChange, handleNumberChange }) => (
   <form onSubmit={handleSubmit}>
@@ -40,6 +60,7 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
+  const [notificationData, setNotificationData] = useState(null)
 
   useEffect(() => {
     personService
@@ -87,6 +108,7 @@ const App = () => {
           setPersons(newPersons)
           setNewName('')
           setNewNumber('')
+          notificate(`Added ${newPerson.name}`, 'green', 5000)
         })
       return
     }
@@ -96,21 +118,32 @@ const App = () => {
       return
     }
 
-    if (presentPerson) {
-      if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
-        const newPerson = { ...presentPerson, number: newNumber }
-        personService
-          .changePerson(presentPerson, newPerson)
-          .then(p => {
-            setPersons(persons.map(p => presentPerson.id === p.id ? newPerson : p))
-            setNewName('')
-            setNewNumber('')
-          })
-      }
-      return
+    if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
+      const newPerson = { ...presentPerson, number: newNumber }
+      personService
+        .changePerson(presentPerson, newPerson)
+        .then(p => {
+          setPersons(persons.map(p => presentPerson.id === p.id ? newPerson : p))
+          setNewName('')
+          setNewNumber('')
+        })
+        .catch(() => {
+          notificate(`Information of ${presentPerson.name} has already been removed from server`, 'red', 5000)
+          setPersons(persons.filter(p => p.id != presentPerson.id))
+          setNewName('')
+          setNewNumber('')
+        })
     }
-
   }
+
+
+  const notificate = (message, color, duration) => {
+    setNotificationData({ message, color, duration })
+    setTimeout(() => {
+      setNotificationData(null)
+    }, duration)
+  }
+
 
   const handleNameChange = (event) => {
     setNewName(event.target.value)
@@ -128,6 +161,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification data={notificationData} />
       <Filter searchTerm={searchTerm} handleSearchChange={handleSearchChange} />
       <h2>Add a new</h2>
       <PersonForm handleSubmit={handleSubmit} newName={newName} newNumber={newNumber}
