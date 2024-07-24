@@ -12,11 +12,11 @@ const addPerson = (person) => {
 }
 
 const deletePerson = (person) => {
-    return axios.delete(`${url}/${person.id}`)
+    return axios.delete(`${url}/${person._id}`)
 }
 
 const changePerson = (person, newPerson) => { 
-    return axios.put(`${url}/${person.id}`, newPerson)
+    return axios.put(`${url}/${person._id}`, newPerson)
 }
 
 

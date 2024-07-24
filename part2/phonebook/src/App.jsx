@@ -41,7 +41,7 @@ const PersonForm = ({ handleSubmit, newName, newNumber, handleNameChange, handle
 const Persons = ({ includedPersons, deletePersonFun }) => (
   <div>
     {includedPersons.map(person =>
-      <div key={person.id}>
+      <div key={person._id}>
         <p>{person.name} {person.number}</p>
         <button onClick={() => deletePersonFun(person)}>delete</button>
       </div>
@@ -83,7 +83,7 @@ const App = () => {
       personService
         .deletePerson(person)
         .then(() => {
-          setPersons(persons.filter(p => (p.id !== person.id)))
+          setPersons(persons.filter(p => (p._id !== person._id)))
         })
     }
   }
@@ -123,13 +123,13 @@ const App = () => {
       personService
         .changePerson(presentPerson, newPerson)
         .then(p => {
-          setPersons(persons.map(p => presentPerson.id === p.id ? newPerson : p))
+          setPersons(persons.map(p => presentPerson._id === p._id ? newPerson : p))
           setNewName('')
           setNewNumber('')
         })
         .catch(() => {
           notificate(`Information of ${presentPerson.name} has already been removed from server`, 'red', 5000)
-          setPersons(persons.filter(p => p.id != presentPerson.id))
+          setPersons(persons.filter(p => p._id != presentPerson._id))
           setNewName('')
           setNewNumber('')
         })
