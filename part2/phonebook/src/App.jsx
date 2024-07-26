@@ -110,6 +110,9 @@ const App = () => {
           setNewNumber('')
           notificate(`Added ${newPerson.name}`, 'green', 5000)
         })
+        .catch(error => {
+          notificate(error.response.data.error, 'red', 5000)
+        })
       return
     }
 
