@@ -1,0 +1,59 @@
+### add blog post
+POST http://localhost:3003/api/blogs
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFuZHJldyIsImlkIjoiNjZiMzgwNGExMjdiYjNkOTU5MjJkYTllIiwiaWF0IjoxNzIzMDM5ODI2fQ.S3KksHr0cdrWey7wGYPdLsoffL_ybAgd9JJu9Ea15AE
+
+{
+    "title": "super blog 2",
+    "author": "andrew",
+    "url": "example.com/myblog2"
+}
+
+
+### get blogs
+GET http://localhost:3003/api/blogs/
+
+
+### delete blog post
+DELETE http://localhost:3003/api/blogs/66b38069127bb3d95922daa6
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImtvYWxhIiwiaWQiOiI2NmIzODBhMTEyN2JiM2Q5NTkyMmRhYjciLCJpYXQiOjE3MjMwMzk5MTV9.VOgT-GUJCwvcMLwHAJUFfEM7LQzHOB52FjfTsXyox1I
+
+
+
+### update blog post
+PUT http://localhost:3003/api/blogs/66a3c8e902d30d444553d9f0
+Content-Type: application/json
+
+{
+    "title": "this title was changed"
+}
+
+
+
+
+### add user
+POST http://localhost:3003/api/users
+Content-Type: application/json
+
+{
+    "username": "koala",
+    "name": "Andrew",
+    "password": "12345"
+}
+
+
+### get users
+GET http://localhost:3003/api/users
+
+
+
+
+
+### login
+POST http://localhost:3003/api/login
+Content-Type: application/json
+
+{
+    "username": "koala",
+    "password": "12345"
+}
