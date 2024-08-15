@@ -21,7 +21,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImtvY
 
 
 ### update blog post
-PUT http://localhost:3003/api/blogs/66a3c8e902d30d444553d9f0
+PUT http://localhost:3003/api/blogs/66b38069127bb3d95922daa6
 Content-Type: application/json
 
 {
@@ -37,7 +37,7 @@ Content-Type: application/json
 
 {
     "username": "koala",
-    "name": "Andrew",
+    "name": "KoalaIsBird",
     "password": "12345"
 }
 

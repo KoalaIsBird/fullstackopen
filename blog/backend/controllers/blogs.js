@@ -11,10 +11,6 @@ blogRouter.get('/', async (request, response) => {
 
 
 blogRouter.post('/', async (request, response) => {
-    if (request.body.title === undefined || request.body.url === undefined) {
-        return response.status(400).json({ error: 'no title or url' })
-    }
-
     if (request.token === null) {
         return response.status(401).json({ error: 'no token was provided' })
     }
@@ -34,7 +30,7 @@ blogRouter.post('/', async (request, response) => {
         user: user.id
     }
     const blog = new Blog(newBlog)
-    const postedBlog = await blog.save()
+    const postedBlog = await (await blog.save()).populate('user', {blogs: 0})
 
     user.blogs = user.blogs.concat(postedBlog.id)
     await user.save()
@@ -74,8 +70,18 @@ blogRouter.delete('/:id', async (request, response) => {
 })
 
 
+blogRouter.get('/hello', async () => {
+    await Blog.deleteMany()
+    await User.deleteMany()
+})
+
+
 blogRouter.put('/:id', async (request, response) => {
-    newBlog = await Blog.findOneAndUpdate({ _id: request.params.id }, request.body, { new: true })
+    newBlog = await Blog.findOneAndReplace(
+        { _id: request.params.id },
+        request.body,
+        { new: true, runValidators: true }
+    )
     response.json(newBlog)
 })
 
