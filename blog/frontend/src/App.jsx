@@ -5,7 +5,7 @@ import blogService from './services/blogs'
 import loginService from './services/login'
 import Togglable from './components/Togglable'
 import LoginForm from './components/LoginForm'
-import CreateNoteForm from './components/CreateNoteForm'
+import CreateBlogForm from './components/CreateBlogForm'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
@@ -125,7 +125,7 @@ const App = () => {
       </p>
       <h2>create new</h2>
       <Togglable buttonLabel='new blog' ref={createFormRef}>
-        <CreateNoteForm onCreate={handleCreateNewBlog} />
+        <CreateBlogForm onCreate={handleCreateNewBlog} />
       </Togglable>
       {blogs.map(blog =>
         <Blog key={blog.id} blog={blog} onLike={handleLike} onRemove={handleRemove} />

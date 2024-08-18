@@ -7,15 +7,15 @@ const Blog = ({ blog, onLike, onRemove }) => {
     padding: 10,
     border: 'solid',
     borderWidth: 1,
-    margin: 5
+    margin: 5,
   }
 
-  const handleLike = async event => {
+  const handleLike = async (event) => {
     event.preventDefault()
     await onLike(blog)
   }
 
-  const handleRemove = async event => {
+  const handleRemove = async (event) => {
     event.preventDefault()
     if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
       await onRemove(blog.id)
@@ -24,22 +24,25 @@ const Blog = ({ blog, onLike, onRemove }) => {
 
   if (show) {
     return (
-      <div style={blogStyle}>
-        {blog.title}
+      <div style={blogStyle} className='blog'>
+        {blog.title} {blog.author} {' '}
         <button onClick={() => setShow(false)}>hide</button>
         <br />
-        {blog.url}<br />
-        likes {blog.likes}
-        <button onClick={handleLike}>like</button><br />
-        {blog.author}<br />
+        {blog.url}
+        <br />
+        likes {blog.likes} {' '}
+        <button onClick={handleLike}>like</button>
+        <br />
+        {blog.user.name}
+        <br />
         <button onClick={handleRemove}>remove</button>
       </div>
     )
   }
 
   return (
-    <div style={blogStyle}>
-      {blog.title}
+    <div style={blogStyle} className='blog'>
+      {blog.title} {blog.author} {' '}
       <button onClick={() => setShow(true)}>view</button>
     </div>
   )
