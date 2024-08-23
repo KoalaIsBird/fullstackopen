@@ -30,7 +30,7 @@ blogRouter.post('/', async (request, response) => {
         user: user.id
     }
     const blog = new Blog(newBlog)
-    const postedBlog = await (await blog.save()).populate('user', {blogs: 0})
+    const postedBlog = await (await blog.save()).populate('user', { blogs: 0 })
 
     user.blogs = user.blogs.concat(postedBlog.id)
     await user.save()

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const Blog = ({ blog, onLike, onRemove }) => {
+const Blog = ({ blog, onLike, onRemove, userId }) => {
   const [show, setShow] = useState(false)
 
   const blogStyle = {
@@ -24,26 +24,24 @@ const Blog = ({ blog, onLike, onRemove }) => {
 
   if (show) {
     return (
-      <div style={blogStyle} className='blog'>
-        {blog.title} {blog.author} {' '}
-        <button onClick={() => setShow(false)}>hide</button>
+      <div style={blogStyle} className="blog">
+        {blog.title} {blog.author} <button onClick={() => setShow(false)}>hide</button>
         <br />
         {blog.url}
         <br />
-        likes {blog.likes} {' '}
-        <button onClick={handleLike}>like</button>
+        likes {blog.likes} <button onClick={handleLike}>like</button>
         <br />
         {blog.user.name}
         <br />
-        <button onClick={handleRemove}>remove</button>
+        {console.log(userId, blog.user.id)}
+        {userId === String(blog.user.id) ? <button onClick={handleRemove}>remove</button> : null}
       </div>
     )
   }
 
   return (
-    <div style={blogStyle} className='blog'>
-      {blog.title} {blog.author} {' '}
-      <button onClick={() => setShow(true)}>view</button>
+    <div style={blogStyle} className="blog">
+      {blog.title} {blog.author} <button onClick={() => setShow(true)}>view</button>
     </div>
   )
 }

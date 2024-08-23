@@ -16,18 +16,14 @@ const App = () => {
 
   // get blogs
   useEffect(() => {
-    blogService.getAll().then(blogs =>
-      setBlogs(sortBlogsByLikes(blogs))
-    )
+    blogService.getAll().then((blogs) => setBlogs(sortBlogsByLikes(blogs)))
   }, [])
 
   // log in user with credentials in its browser if there are
   useEffect(() => {
     const localUser = JSON.parse(window.localStorage.getItem('loggedInUser'))
     if (localUser) {
-      setUser(
-        localUser
-      )
+      setUser(localUser)
       blogService.setToken(localUser.token)
     }
   }, [])
@@ -41,6 +37,8 @@ const App = () => {
       blogService.setToken(user.token)
     } catch (exception) {
       notificate('wrong credentials', 'red', 5000)
+      window.localStorage.clear()
+      setUser(null)
       throw exception
     }
   }
@@ -48,13 +46,11 @@ const App = () => {
   // notificate the user of something
   const notificate = (message, color, duration) => {
     setNotification({ message, color })
-    setTimeout(
-      () => setNotification({ message: null, color: null }),
-      duration)
+    setTimeout(() => setNotification({ message: null, color: null }), duration)
   }
 
   // handle logout
-  const handleLogout = event => {
+  const handleLogout = (event) => {
     event.preventDefault()
     window.localStorage.removeItem('loggedInUser')
     setUser(null)
@@ -74,34 +70,28 @@ const App = () => {
   }
 
   // handle a like, given a blog
-  const handleLike = async blog => {
-    const receivedBlog = await blogService.replace(
-      blog.id,
-      { ...blog, likes: blog.likes + 1, user: blog.user.id }
+  const handleLike = async (blog) => {
+    const receivedBlog = await blogService.replace(blog.id, {
+      ...blog,
+      likes: blog.likes + 1,
+      user: blog.user.id,
+    })
+
+    const updatedBlogs = blogs.map((localBlog) =>
+      localBlog.id === blog.id ? { ...localBlog, likes: receivedBlog.likes } : localBlog
     )
 
-    const updatedBlogs = blogs
-      .map(localBlog =>
-        localBlog.id === blog.id
-          ? { ...localBlog, likes: receivedBlog.likes }
-          : localBlog
-      )
-
-    setBlogs(
-      sortBlogsByLikes(
-        updatedBlogs
-      )
-    )
+    setBlogs(sortBlogsByLikes(updatedBlogs))
   }
 
   // return new array, which is the given blogs array but sorted
-  const sortBlogsByLikes = blogs => {
+  const sortBlogsByLikes = (blogs) => {
     return blogs.toSorted((blog1, blog2) => blog2.likes - blog1.likes)
   }
 
-  const handleRemove = async blogId => {
+  const handleRemove = async (blogId) => {
     await blogService.remove(blogId)
-    setBlogs(blogs.filter(localBlog => localBlog.id !== blogId))
+    setBlogs(blogs.filter((localBlog) => localBlog.id !== blogId))
   }
 
   // if user is not logged in
@@ -120,16 +110,23 @@ const App = () => {
     <div>
       <Notification message={notification.message} color={notification.color} />
       <h2>blogs</h2>
-      <p>{user.name} logged in
+      <p>
+        {user.name} logged in
         <button onClick={handleLogout}>logout</button>
       </p>
       <h2>create new</h2>
-      <Togglable buttonLabel='new blog' ref={createFormRef}>
+      <Togglable buttonLabel="new blog" ref={createFormRef}>
         <CreateBlogForm onCreate={handleCreateNewBlog} />
       </Togglable>
-      {blogs.map(blog =>
-        <Blog key={blog.id} blog={blog} onLike={handleLike} onRemove={handleRemove} />
-      )}
+      {blogs.map((blog) => (
+        <Blog
+          key={blog.id}
+          blog={blog}
+          onLike={handleLike}
+          onRemove={handleRemove}
+          userId={user.id}
+        />
+      ))}
     </div>
   )
 }
