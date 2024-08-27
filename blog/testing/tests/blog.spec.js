@@ -1,12 +1,6 @@
 const { test, expect, beforeEach, describe } = require('@playwright/test')
+const { likeBlog, getY } = require('./helpers.js')
 
-const likeBlog = async blog => {
-    await blog.getByRole('button', { name: 'like' }).click()
-}
-
-const getY = async blog => {
-    return (await blog.boundingBox()).y
-}
 
 describe('Blog app', () => {
     beforeEach(async ({ page, request }) => {
