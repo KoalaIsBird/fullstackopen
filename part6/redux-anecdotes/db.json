@@ -33,12 +33,12 @@
     {
       "id": "cb33",
       "content": "aaaa",
-      "votes": 2
+      "votes": 3
     },
     {
       "id": "e91a",
       "content": "aaaa",
-      "votes": 2
+      "votes": 3
     },
     {
       "id": "c0bd",
@@ -58,7 +58,12 @@
     {
       "id": "bbb0",
       "content": "needGod.com",
-      "votes": 43
+      "votes": 45
+    },
+    {
+      "id": "ff38",
+      "content": "hi",
+      "votes": 1
     }
   ]
 }
