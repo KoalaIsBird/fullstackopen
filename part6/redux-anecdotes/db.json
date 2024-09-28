@@ -1,0 +1,64 @@
+{
+  "anecdotes": [
+    {
+      "id": "e002",
+      "content": "hello",
+      "votes": 31
+    },
+    {
+      "id": "4ed3",
+      "content": "world",
+      "votes": 31
+    },
+    {
+      "id": "38b4",
+      "content": "hello",
+      "votes": 30
+    },
+    {
+      "id": "79b6",
+      "content": "hi",
+      "votes": 5
+    },
+    {
+      "id": "c451",
+      "content": "",
+      "votes": 7
+    },
+    {
+      "id": "1d89",
+      "content": "a",
+      "votes": 2
+    },
+    {
+      "id": "cb33",
+      "content": "aaaa",
+      "votes": 2
+    },
+    {
+      "id": "e91a",
+      "content": "aaaa",
+      "votes": 2
+    },
+    {
+      "id": "c0bd",
+      "content": "aaa",
+      "votes": 2
+    },
+    {
+      "id": "a173",
+      "content": "hello",
+      "votes": 1
+    },
+    {
+      "id": "a3fd",
+      "content": "hello",
+      "votes": 1
+    },
+    {
+      "id": "bbb0",
+      "content": "needGod.com",
+      "votes": 43
+    }
+  ]
+}
