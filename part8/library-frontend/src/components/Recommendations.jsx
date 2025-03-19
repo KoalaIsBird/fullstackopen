@@ -1,29 +1,22 @@
 import { useQuery } from '@apollo/client'
-import { GET_BOOKS } from './queries'
+import { GET_BOOKS, ME } from './queries'
 import { useEffect, useState } from 'react'
 
 const Recommendations = props => {
-  const [displayData, setDisplayData] = useState([])
-  const { loading, data } = useQuery(GET_BOOKS)
+  // const [displayData, setDisplayData] = useState([])
+  const { loading: bookLoading, data: bookData } = useQuery(GET_BOOKS)
+  const { loading: userLoading, data: userData } = useQuery(ME)
 
-  useEffect(() => {
-    if (loading) {
-      return
-    }
-
-    setDisplayData(
-      data.allBooks.filter(
-        b => b.genres.find(g => g === props.favoriteGenre) !== undefined
-      )
-    )
-  }, [data])
-
-  if (!props.show) {
-    return null
+  if (bookLoading || userLoading) {
+    return <div>loading...</div>
   }
 
-  if (displayData.length === 0) {
-    return <div>no books to suggest</div>
+  const books = bookData.allBooks.filter(
+    b => b.genres.find(g => g === userData.me.favoriteGenre) !== undefined
+  )
+
+  if (!books) {
+    return <div>no suggestions</div>
   }
 
   return (
@@ -37,7 +30,7 @@ const Recommendations = props => {
             <th>author</th>
             <th>published</th>
           </tr>
-          {displayData.map(a => (
+          {books.map(a => (
             <tr key={a.title}>
               <td>{a.title}</td>
               <td>{a.author.name}</td>

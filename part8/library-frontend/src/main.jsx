@@ -9,6 +9,7 @@ import {
   HttpLink,
   InMemoryCache
 } from '@apollo/client'
+import { BrowserRouter } from 'react-router'
 
 const httpLink = new HttpLink({ uri: 'http://localhost:4000' })
 
@@ -20,7 +21,7 @@ const headerLink = new ApolloLink((operation, forward) => {
       headers: { ...c.headers, authorization: localToken }
     }))
   }
-  
+
   return forward(operation)
 })
 
@@ -31,8 +32,10 @@ const apolloClient = new ApolloClient({
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <ApolloProvider client={apolloClient}>
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
+    <BrowserRouter>
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    </BrowserRouter>
   </ApolloProvider>
 )

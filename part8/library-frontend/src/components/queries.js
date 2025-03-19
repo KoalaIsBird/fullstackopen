@@ -50,4 +50,13 @@ export const LOGIN_QUERY = gql`
     }
   }
 `
+export const ME = gql`
+  query {
+    me {
+      username
+      favoriteGenre
+      _id
+    }
+  }
+`
 

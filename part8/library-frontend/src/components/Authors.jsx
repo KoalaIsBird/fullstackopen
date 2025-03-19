@@ -4,10 +4,6 @@ import { GET_AUTHORS } from './queries'
 const Authors = props => {
   const { loading, data } = useQuery(GET_AUTHORS)
 
-  if (!props.show) {
-    return null
-  }
-
   if (loading) {
     return <div>loading authors...</div>
   }

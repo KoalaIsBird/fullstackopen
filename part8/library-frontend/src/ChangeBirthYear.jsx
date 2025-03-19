@@ -38,15 +38,15 @@ const ChangeBirthYear = props => {
     }
   }, [data])
 
-  if (!props.show) {
-    return null
-  }
-
   const submit = async event => {
     event.preventDefault()
     changeBornYear({ variables: { name: author, birthYear: bornYear } })
     setBornYear('')
     setAuthor('')
+  }
+
+  if (!authorsData) {
+    return <div>loading authors...</div>
   }
 
   return (

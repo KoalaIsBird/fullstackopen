@@ -1,29 +1,24 @@
 import { useMutation } from '@apollo/client'
 import { useEffect, useState } from 'react'
-import { LOGIN_QUERY } from './components/queries'
+import { LOGIN_QUERY, ME } from './components/queries'
+import { Link, useNavigate } from 'react-router'
 
-const Login = ({show, setToken, setPage}) => {
+const Login = props => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const navigate = useNavigate()
 
-  const [login, { data }] = useMutation(LOGIN_QUERY)
-
-  useEffect(() => {
-    if (data) {
-      setToken(data.login.value)
+  const [login, { data }] = useMutation(LOGIN_QUERY, {
+    onCompleted: data => {
       localStorage.setItem('user-token', data.login.value)
-      setPage('authors')
+      navigate('/')
     }
-  }, [data])
-
-  if (!show) {
-    return null
-  }
+  })
 
   const submit = async event => {
     event.preventDefault()
 
-    login({ variables: {username, password} })
+    login({ variables: { username, password } })
 
     setUsername('')
     setPassword('')

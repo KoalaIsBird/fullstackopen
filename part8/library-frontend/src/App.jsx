@@ -2,87 +2,73 @@ import { useEffect, useState } from 'react'
 import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
-import { gql, useQuery } from '@apollo/client'
+import { resetCaches, useLazyQuery, useQuery } from '@apollo/client'
 import ChangeBirthYear from './ChangeBirthYear'
 import Login from './Login'
 import Recommendations from './components/Recommendations'
-
-const ME = gql`
-  query {
-    me {
-      username
-      favoriteGenre
-      _id
-    }
-  }
-`
+import { Link, Route, Routes, useNavigate } from 'react-router'
+import { ME } from './components/queries'
 
 const App = () => {
-  const [page, setPage] = useState('authors')
-  const [token, setToken] = useState(null)
-  const [user, setUser] = useState(null)
-  const { loading, data } = useQuery(ME, { skip: !token })
-
-  useEffect(() => {
-    if (!data) {
-      return
-    }
-    setUser(data.me)
-  }, [data])
-
-  useEffect(() => {
-    const localToken = localStorage.getItem('user-token')
-    if (localToken) {
-      setToken(localToken)
-    }
-  }, [])
-
-  //useEffect(() => {}, [token])
+  const navigate = useNavigate()
+  const token = localStorage.getItem('user-token')
 
   return (
     <div>
       <div>
-        <button onClick={() => setPage('authors')}>authors</button>
-        <button onClick={() => setPage('books')}>books</button>
-        {user ? (
+        <Link to='/authors'>
+          <button>Authors</button>
+        </Link>
+        <Link to='/books'>
+          <button>Books</button>
+        </Link>
+
+        {token ? (
           <>
-            <button onClick={() => setPage('add')}>add book</button>
-            <button onClick={() => setPage('recommendations')}>recommendations</button>
-            <button onClick={() => setPage('changeBirthYear')}>author birth year</button>
+            <Link to='/addbook'>
+              <button>Add Book</button>
+            </Link>
+            <Link to='/recommended'>
+              <button>Recommended</button>
+            </Link>
+            <Link to='/editauthor'>
+              <button>Edit Author</button>
+            </Link>
             <button
               onClick={() => {
                 localStorage.removeItem('user-token')
-                setToken(null)
-                setUser(null)
-                setPage('authors')
+                navigate('/')
               }}
             >
-              logout
+              Logout
             </button>
           </>
         ) : (
-          <button onClick={() => setPage('login')}>login</button>
+          <>
+            <Link to='/login'>
+              <button>Login</button>
+            </Link>
+          </>
         )}
       </div>
 
-      <Authors show={page === 'authors'} />
+      <Routes>
+        <Route index element={<h1>Welcome to the book app's index!</h1>} />
+        <Route element={<Books />} path='/books' />
+        <Route element={<Authors />} path='/authors' />
+        <Route element={<Login />} path='/login' />
 
-      <Books show={page === 'books'} />
-
-      {user ? (
-        <>
-          <Recommendations
-            show={page === 'recommendations'}
-            favoriteGenre={user.favoriteGenre}
-          />
-
-          <NewBook show={page === 'add'} />
-
-          <ChangeBirthYear show={page === 'changeBirthYear'} />
-        </>
-      ) : null}
-
-      <Login show={page === 'login'} setToken={setToken} setPage={setPage} />
+        {token ? (
+          <>
+            <Route element={<NewBook />} path='/addbook' />
+            <Route
+              element={<Recommendations />}
+              path='/recommended'
+            />
+            <Route element={<ChangeBirthYear />} path='/editauthor' />
+          </>
+        ) : null}
+      </Routes>
     </div>
   )
 }

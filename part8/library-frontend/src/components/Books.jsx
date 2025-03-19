@@ -22,9 +22,6 @@ const Books = props => {
     )
   }, [data, genre])
 
-  if (!props.show) {
-    return null
-  }
 
   if (loading) {
     return <div>loading books...</div>
