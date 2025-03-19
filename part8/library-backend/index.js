@@ -36,7 +36,7 @@ const typeDefs = `
   type User {
   username: String!
   favoriteGenre: String!
-  id: ID!
+  _id: ID!
 }
 
   type Token {
@@ -79,7 +79,9 @@ const typeDefs = `
 
 const resolvers = {
   Query: {
-    me: (root, args, context) => context.user,
+    me: (root, args, context) => {
+      return context
+    },
     bookCount: async () => Book.countDocuments(),
     authorCount: async () => Author.countDocuments(),
     allBooks: async (root, args) => {
@@ -88,7 +90,7 @@ const resolvers = {
       }
 
       if (args.author && args.genre) {
-        const argAuthorId = await Author.findOne({ name: args.author })
+        const argAuthor = await Author.findOne({ name: args.author })
         return await Book.find({
           genres: { $in: [args.genre] },
           author: argAuthorId
@@ -110,7 +112,7 @@ const resolvers = {
   },
   Mutation: {
     addBook: async (root, args, context) => {
-      if (!context.user) {
+      if (!context) {
         throw new GraphQLError('No user logged in', {
           extensions: {
             code: 'BAD_USER_INPUT'
@@ -127,8 +129,8 @@ const resolvers = {
         }
 
         const newBook = new Book({ ...args, author: bookAuthor })
-
         await newBook.save()
+
         return newBook
       } catch (error) {
         throw new GraphQLError('Saving book failed', {
@@ -140,7 +142,7 @@ const resolvers = {
       }
     },
     editAuthor: async (root, args, context) => {
-      if (!context.user) {
+      if (!context) {
         throw new GraphQLError('No user logged in', {
           extensions: {
             code: 'BAD_USER_INPUT'
@@ -172,7 +174,7 @@ const resolvers = {
         throw new GraphQLError('Login failed', { extensions: { code: 'BAD_USER_INPUT' } })
       }
 
-      return { value: jwt.sign({ ...user }, process.env.JWT_SECRET) }
+      return { value: jwt.sign(user._doc, process.env.JWT_SECRET) }
     }
   }
 }
@@ -185,14 +187,13 @@ const server = new ApolloServer({
 startStandaloneServer(server, {
   listen: { port: 4000 },
   context: async ({ req, res }) => {
-    console.log('hello')
-    let token = req.headers.authorization
+    const token = req.headers.authorization
 
     if (!token) {
       return null
     }
 
-    return jwt.verify(token.substring(7), process.env.JWT_SECRET)
+    return jwt.verify(token, process.env.JWT_SECRET)
   }
 }).then(({ url }) => {
   console.log(`Server ready at ${url}`)
