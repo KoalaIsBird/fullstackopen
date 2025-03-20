@@ -98,11 +98,15 @@ const resolvers = {
       }
 
       if (args.author) {
+        console.log('in author: why??')
         const argAuthorId = await Author.findOne({ name: args.author })
         return await Book.find({ author: argAuthorId._id }).populate('author')
       }
 
-      return await Book.find({ genres: { $in: [args.genre] } })
+      const bookWithGenre = await Book.find({ genres: { $in: [args.genre] } }).populate(
+        'author'
+      )
+      return bookWithGenre
     },
 
     allAuthors: async () => Author.find({})
@@ -123,15 +127,15 @@ const resolvers = {
       let bookAuthor = await Author.findOne({ name: args.author })
 
       try {
-      if (!bookAuthor) {
-        bookAuthor = new Author({ name: args.author })
-        await bookAuthor.save()
-      }
+        if (!bookAuthor) {
+          bookAuthor = new Author({ name: args.author })
+          await bookAuthor.save()
+        }
 
-      const newBook = new Book({ ...args, author: bookAuthor })
-      await newBook.save()
+        const newBook = new Book({ ...args, author: bookAuthor })
+        await newBook.save()
 
-      return newBook
+        return newBook
       } catch (error) {
         throw new GraphQLError('Saving book failed', {
           extensions: {

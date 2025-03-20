@@ -2,26 +2,14 @@ import { useQuery } from '@apollo/client'
 import { GET_BOOKS } from './queries'
 import { useEffect, useState } from 'react'
 
-const Books = props => {
+const Books = () => {
   const [genre, setGenre] = useState('')
-  const [displayData, setDisplayData] = useState([])
-  const { loading, data } = useQuery(GET_BOOKS)
+  const { loading, data: booksReq, refetch, error } = useQuery(GET_BOOKS)
 
   useEffect(() => {
-    if (loading) {
-      return
-    }
-
-    if (genre === '') {
-      setDisplayData(data.allBooks)
-      return
-    }
-
-    setDisplayData(
-      data.allBooks.filter(b => b.genres.find(g => g === genre) !== undefined)
-    )
-  }, [data, genre])
-
+    refetch({ genre: genre })
+    console.log('refectched')
+  }, [genre])
 
   if (loading) {
     return <div>loading books...</div>
@@ -38,7 +26,7 @@ const Books = props => {
             <th>author</th>
             <th>published</th>
           </tr>
-          {displayData.map(a => (
+          {booksReq.allBooks.map(a => (
             <tr key={a.title}>
               <td>{a.title}</td>
               <td>{a.author.name}</td>
@@ -50,7 +38,7 @@ const Books = props => {
       <div>
         {genre
           ? null
-          : displayData
+          : booksReq.allBooks
               .map(book => book.genres)
               .reduce(
                 (accumulator, bookGenres) =>
