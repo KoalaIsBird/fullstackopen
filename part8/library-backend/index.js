@@ -1,204 +1,86 @@
-const { ApolloServer } = require('@apollo/server')
-const { startStandaloneServer } = require('@apollo/server/standalone')
-const { v1: uuid } = require('uuid')
-const Book = require('./models/book')
-const Author = require('./models/author')
-const mongoose = require('mongoose')
-const { GraphQLError } = require('graphql')
-const jwt = require('jsonwebtoken')
-const User = require('./models/User')
+import { ApolloServer } from '@apollo/server'
+import { startStandaloneServer } from '@apollo/server/standalone'
+import { v1 as uuid } from 'uuid'
+import { connect } from 'mongoose'
+import jwt from 'jsonwebtoken'
 
-require('dotenv').config()
+import { typeDefs } from './typeDefs.js'
+import { resolvers } from './resolvers.js'
+import cors from 'cors'
+import { createServer } from 'http'
+import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer'
+import { makeExecutableSchema } from '@graphql-tools/schema'
+import { WebSocketServer } from 'ws'
+import { useServer } from 'graphql-ws/use/ws'
+import express, { json } from 'express'
 
-mongoose
-  .connect(process.env.MONGODB_URI)
+// require('dotenv').config()
+import dotenv from 'dotenv'
+import { expressMiddleware } from '@apollo/server/express4'
+dotenv.config()
+
+connect(process.env.MONGODB_URI)
   .then(res => console.log('logged in to mongodb'))
   .catch(error => console.log('error logging in to mongodb'))
 
-const typeDefs = `
-  
+// Create the schema, which will be used separately by ApolloServer and
+// the WebSocket server.
+const schema = makeExecutableSchema({ typeDefs, resolvers })
 
-  type Author {
-    name: String!
-    born: Int
-    bookCount: Int!
-    id: ID!
-  }
-    
-  type Book {
-      title: String!
-      author: Author!
-      published: Int!
-      genres: [String!]!
-      id: ID!
-    }
+// Create an Express app and HTTP server; we will attach both the WebSocket
+// server and the ApolloServer to this HTTP server.
+const app = express()
+const httpServer = createServer(app)
 
-  type User {
-  username: String!
-  favoriteGenre: String!
-  _id: ID!
-}
+// Create our WebSocket server using the HTTP server we just set up.
+const wsServer = new WebSocketServer({
+  server: httpServer
 
-  type Token {
-  value: String!
-}
+  // path: '/subscriptions',
+})
+// Save the returned server's info so we can shutdown this server later
+const serverCleanup = useServer({ schema }, wsServer)
 
-  type Query {
-    bookCount: Int!
-    authorCount: Int!
-    allBooks(author: String, genre: String): [Book!]!
-    allAuthors: [Author!]!
-    me: User
-}
+// Set up ApolloServer.
+const server = new ApolloServer({
+  schema,
+  plugins: [
+    // Proper shutdown for the HTTP server.
+    ApolloServerPluginDrainHttpServer({ httpServer }),
 
-  type Mutation {
-    addBook(
-      title: String!
-      author: String!
-      published: Int!
-      genres: [String!]!
-    ): Book
-    
-    editAuthor(
-      name: String!
-      setBornTo: Int!
-    ): Author
-
-    createUser(
-    username: String!
-    favoriteGenre: String!
-    ): User
-
-    login(
-    username: String!
-    password: String!
-  ): Token
-  }
-  
-`
-
-const resolvers = {
-  Query: {
-    me: (root, args, context) => {
-      return context
-    },
-    bookCount: async () => Book.countDocuments(),
-    authorCount: async () => Author.countDocuments(),
-    allBooks: async (root, args) => {
-      if (!args.author && !args.genre) {
-        return await Book.find({}).populate('author')
-      }
-
-      if (args.author && args.genre) {
-        const argAuthor = await Author.findOne({ name: args.author })
-        return await Book.find({
-          genres: { $in: [args.genre] },
-          author: argAuthorId
-        }).populate('author')
-      }
-
-      if (args.author) {
-        console.log('in author: why??')
-        const argAuthorId = await Author.findOne({ name: args.author })
-        return await Book.find({ author: argAuthorId._id }).populate('author')
-      }
-
-      const bookWithGenre = await Book.find({ genres: { $in: [args.genre] } }).populate(
-        'author'
-      )
-      return bookWithGenre
-    },
-
-    allAuthors: async () => Author.find({})
-  },
-  Author: {
-    bookCount: async root => await Book.countDocuments({ author: root.id })
-  },
-  Mutation: {
-    addBook: async (root, args, context) => {
-      if (!context) {
-        throw new GraphQLError('No user logged in', {
-          extensions: {
-            code: 'BAD_USER_INPUT'
+    // Proper shutdown for the WebSocket server.
+    {
+      async serverWillStart() {
+        return {
+          async drainServer() {
+            await serverCleanup.dispose()
           }
-        })
-      }
-
-      let bookAuthor = await Author.findOne({ name: args.author })
-
-      try {
-        if (!bookAuthor) {
-          bookAuthor = new Author({ name: args.author })
-          await bookAuthor.save()
         }
-
-        const newBook = new Book({ ...args, author: bookAuthor })
-        await newBook.save()
-
-        return newBook
-      } catch (error) {
-        throw new GraphQLError('Saving book failed', {
-          extensions: {
-            code: 'BAD_USER_INPUT',
-            error
-          }
-        })
       }
-    },
-    editAuthor: async (root, args, context) => {
-      if (!context) {
-        throw new GraphQLError('No user logged in', {
-          extensions: {
-            code: 'BAD_USER_INPUT'
-          }
-        })
-      }
+    }
+  ]
+})
 
-      const author = await Author.findOne({ name: args.name })
+await server.start()
+app.use(
+  '/',
+  cors(),
+  json(),
+  expressMiddleware(server, {
+    context: async ({ req, res }) => {
+      const token = req.headers.authorization
 
-      if (!author) {
+      if (!token) {
         return null
       }
 
-      author.born = args.setBornTo
-      await author.save()
-      return author
-    },
-    createUser: async (root, args) => {
-      const user = new User({
-        username: args.username,
-        favoriteGenre: args.favoriteGenre
-      })
-      return await user.save()
-    },
-    login: async (root, args) => {
-      const user = await User.findOne({ username: args.username })
-
-      if (!user || args.password !== 'password') {
-        throw new GraphQLError('Login failed', { extensions: { code: 'BAD_USER_INPUT' } })
-      }
-
-      return { value: jwt.sign(user._doc, process.env.JWT_SECRET) }
+      return jwt.verify(token, process.env.JWT_SECRET)
     }
-  }
-}
+  })
+)
 
-const server = new ApolloServer({
-  typeDefs,
-  resolvers
-})
-
-startStandaloneServer(server, {
-  listen: { port: 4000 },
-  context: async ({ req, res }) => {
-    const token = req.headers.authorization
-
-    if (!token) {
-      return null
-    }
-
-    return jwt.verify(token, process.env.JWT_SECRET)
-  }
-}).then(({ url }) => {
-  console.log(`Server ready at ${url}`)
+const PORT = 4000
+// Now that our HTTP server is fully set up, we can listen to it.
+httpServer.listen(PORT, () => {
+  console.log(`Server is now running on http://localhost:${PORT}`)
 })

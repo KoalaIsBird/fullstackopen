@@ -46,13 +46,13 @@
 // export default Recommendations
 
 import { useLazyQuery, useQuery } from '@apollo/client'
-import { GET_BOOKS, ME } from './queries'
+import { ALL_BOOKS, ME } from './queries'
 import { useEffect, useState } from 'react'
 
 const Recommendations = () => {
   const { loading: loadingGenre, data: genreQuery } = useQuery(ME)
   const [queryBooks, { loading: loadingBooks, data: booksReq }] = useLazyQuery(
-    GET_BOOKS,
+    ALL_BOOKS,
     { fetchPolicy: 'network-only' }
   )
 
@@ -64,6 +64,7 @@ const Recommendations = () => {
   }, [genreQuery])
 
   if (!genreQuery || !booksReq) {
+    console.log(genreQuery, booksReq)
     return <div>loading...</div>
   }
 

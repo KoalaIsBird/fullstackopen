@@ -1,10 +1,28 @@
-import { useQuery } from '@apollo/client'
-import { GET_BOOKS } from './queries'
+import { useApolloClient, useQuery, useSubscription } from '@apollo/client'
+import { ALL_BOOKS, BOOK_ADDED, ME } from './queries'
 import { useEffect, useState } from 'react'
 
 const Books = () => {
+  const client = useApolloClient()
   const [genre, setGenre] = useState('')
-  const { loading, data: booksReq, refetch, error } = useQuery(GET_BOOKS)
+  const {
+    loading,
+    data: booksReq,
+    refetch,
+    error
+  } = useQuery(ALL_BOOKS, { variables: { genre: genre } })
+
+  useSubscription(BOOK_ADDED, {
+    onData: ({ data, client }) => {
+      window.alert(`new book ${data.data.bookAdded.title} added`)
+      client.cache.updateQuery(
+        { query: ALL_BOOKS, variables: { genre: genre } },
+        ({ allBooks }) => {
+          return { allBooks: allBooks.concat(data.data.bookAdded) }
+        }
+      )
+    }
+  })
 
   useEffect(() => {
     refetch({ genre: genre })
@@ -18,7 +36,6 @@ const Books = () => {
   return (
     <div>
       <h2>books {genre ? `- ${genre}` : null}</h2>
-
       <table>
         <tbody>
           <tr>
