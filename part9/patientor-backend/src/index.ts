@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import { router } from './router';
-import { Gender } from './types';
 
 const app = express();
 
@@ -21,8 +20,3 @@ app.use('/api', router);
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
-export const isGender = (gender: string): gender is Gender => {
-  return Object.values(Gender)
-    .map(v => v.toString())
-    .includes(gender);
-};

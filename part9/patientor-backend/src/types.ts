@@ -1,16 +1,9 @@
+import z, { nativeEnum, object, string } from 'zod';
+
 export interface Diagnosis {
   code: string;
   name: string;
   latin?: string;
-}
-
-export interface Patient {
-  id: string;
-  name: string;
-  dateOfBirth: string;
-  ssn: string;
-  gender: Gender;
-  occupation: string;
 }
 
 export enum Gender {
@@ -18,6 +11,15 @@ export enum Gender {
   Female = 'female'
 }
 
-export type NewPatient = Omit<Patient, 'id'>;
+export const patientSchema = object({
+  id: string().uuid(),
+  name: string(),
+  dateOfBirth: string().date(),
+  ssn: string(),
+  gender: nativeEnum(Gender),
+  occupation: string()
+});
+
+export type Patient = z.infer<typeof patientSchema>;
 
 export type CensoredPatient = Omit<Patient, 'ssn'>;
