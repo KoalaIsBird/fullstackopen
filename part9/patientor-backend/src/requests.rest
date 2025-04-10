@@ -6,5 +6,28 @@ content-type: application/json
     "dateOfBirth": "2024-01-01",
     "ssn": "FDDU485YNDI",
     "gender": "male",
-    "occupation": "reader"
+    "occupation": "reader",
+    "entries": [{"type": "HealthCheck"}]
 }
+
+###
+
+POST http://localhost:3001/api/patients/d2773336-f723-11e9-8f0b-362b9e155667/entries
+content-type: application/json
+
+{
+    "type": "Hospital",
+    "description": "Checked the person's health",
+    "date": "2020-01-01",
+    "specialist": "SOS Medecins",
+    "healthCheckRating": 0,
+    "discharge": {"date": "2020-01-01", "criteria": "sick"}
+}
+
+###
+
+GET http://localhost:3001/api/patients/d2773336-f723-11e9-8f0b-362b9e155667
+
+###
+
+GET http://localhost:3001/api/diagnosises
